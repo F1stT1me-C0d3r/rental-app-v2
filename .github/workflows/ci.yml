@@ -7,7 +7,7 @@ jobs:
     env:
       DATABASE_URL: "file:./ci.db"
       JWT_SECRET: ci
-      LOCKBOX_KEY: c2VlZC1rZXktZm9yLWxvY2FsLXRlc3Rpbmctb25seS0wMDA=
+      LOCKBOX_KEY: MMfpp3MwJm4LzDZNtPZgu4M1E1v5jxGnjWlN6t+RPlA=
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
