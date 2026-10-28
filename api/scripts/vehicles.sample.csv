@@ -1,0 +1,4 @@
+make,model,year,vin,plate,dailyRate,deposit,seats,lockboxNumber,lockboxCode
+Chevrolet,Malibu,2021,1G1ZD5ST5MF000004,KY-RENT4,50,200,5,4,2277
+Nissan,Rogue,2022,5N1AT3AA8NC000005,KY-RENT5,65,250,5,5,9034
+Kia,Carnival,2023,KNDNB4H32P6000006,KY-RENT6,95,300,8,6,6612

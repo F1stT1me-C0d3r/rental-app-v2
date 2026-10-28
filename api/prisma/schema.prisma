@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Test build uses SQLite. For deploy: provider = "postgresql" and a fresh migration.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Roles: CUSTOMER | ADMIN   (stored as strings for SQLite compatibility)
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         String     @default("CUSTOMER")
+  createdAt    DateTime   @default(now())
+  bookings     Booking[]
+  auditLogs    AuditLog[]
+  lockboxes    Lockbox[]
+}
+
+// Status: AVAILABLE | RENTED | MAINTENANCE | RETIRED
+model Vehicle {
+  id            String          @id @default(cuid())
+  make          String
+  model         String
+  year          Int
+  vin           String          @unique
+  plate         String          @unique
+  color         String?
+  seats         Int             @default(5)
+  transmission  String          @default("Automatic")
+  odometer      Int             @default(0)
+  dailyRate     Float
+  deposit       Float
+  status        String          @default("AVAILABLE")
+  photoUrl      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lockbox       Lockbox?
+  bookings      Booking[]
+  services      ServiceRecord[]
+}
+
+/// Physical lockbox keyed by its number. Code is AES-256-GCM encrypted with LOCKBOX_KEY.
+model Lockbox {
+  number        Int      @id
+  codeEncrypted String
+  location      String?
+  vehicleId     String?  @unique
+  vehicle       Vehicle? @relation(fields: [vehicleId], references: [id])
+  updatedAt     DateTime @updatedAt
+  updatedById   String?
+  updatedBy     User?    @relation(fields: [updatedById], references: [id])
+}
+
+model ServiceRecord {
+  id        String   @id @default(cuid())
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  date      DateTime
+  odometer  Int
+  workDone  String
+  cost      Float
+  notes     String?
+}
+
+// Status: PENDING | CONFIRMED | ACTIVE | COMPLETED | CANCELED
+model Booking {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  vehicleId      String
+  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id])
+  startAt        DateTime
+  endAt          DateTime
+  status         String    @default("PENDING")
+  totalAmount    Float
+  paid           Boolean   @default(false)
+  codeRevealedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([vehicleId, startAt, endAt])
+}
+
+// Status: OPEN | IN_PROGRESS | RESOLVED
+model Ticket {
+  id        String   @id @default(cuid())
+  email     String
+  subject   String
+  body      String
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String
+  detail    String?
+  createdAt DateTime @default(now())
+}
